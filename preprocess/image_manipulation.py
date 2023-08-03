@@ -9,6 +9,16 @@ def resize_image(image, width, height):
     return resized_image
 
 
+def calculate_sharpness(image):
+    # Apply Gaussian blur
+    image = cv2.GaussianBlur(image, (3, 3), 0, 0, cv2.BORDER_DEFAULT)
+    # Convert to gray
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Calculate the sharpness
+    sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
+    return sharpness
+
+
 def is_monochromatic(image, tolerance=30):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     h, s, v = cv2.split(hsv)

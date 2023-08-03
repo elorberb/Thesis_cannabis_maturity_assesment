@@ -1,4 +1,4 @@
-import image_manipulation
+from image_manipulation import *
 import os
 
 
@@ -64,11 +64,13 @@ def cut_images(image, patch_height=300, patch_width=300):
 
 
 def save_patches(image_name, patches, dir_path):
+    # Create the image name subdirectory if it does not exist
     subdir_path = os.path.join(dir_path, image_name)
     if not os.path.exists(subdir_path):
         os.makedirs(subdir_path)
 
     for i, patch in enumerate(patches):
+        # Use the image name subdirectory as the file path
         file_path = os.path.join(subdir_path, f"{image_name}_p{i}.jpg")
         cv2.imwrite(file_path, patch)
 
@@ -92,12 +94,19 @@ def preprocess_patches(dir_path, trichomes_images):
     Returns:
     - None
     """
-    for i in range(len(trichomes_images)):
-        # Unpack the image and image name from the tuple
-        image, image_name = trichomes_images[i]
-        # Cut the image into patches and get the patch coordinates
-        patches, patchs_cords = cut_images(image)
-        # Filter out monochromatic and blurry patches using a list comprehension
-        patches = [patch for patch in patches if not image_manipulation.is_monochromatic(patch) and not is_blurry(patch)]
+    # Preprocess the patches of each image
+    for (image, image_name) in trichomes_images:
+        # Cut the image into patches
+        patches, _ = cut_images(image)
+
+        # Calculate the sharpness and monochromatic values for each patch
+        sharpness_values = [calculate_sharpness(patch) for patch in patches]
+
+        # Get the average sharpness and monochromatic values for the patches
+        avg_sharpness = np.mean(sharpness_values)
+
+        # Preprocess each patch
+        preprocessed_patches = [patch for patch, sharpness in zip(patches, sharpness_values) if sharpness > avg_sharpness]
+
         # Save the preprocessed patches to the specified directory
-        save_patches(image_name, patches, dir_path)
+        save_patches(image_name, preprocessed_patches, dir_path)
