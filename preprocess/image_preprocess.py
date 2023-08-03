@@ -53,14 +53,18 @@ def read_images_and_names(dir_path, func=None):
 
 def cut_images(image, patch_height=300, patch_width=300):
     patches = []
-    patches_with_cords = []
-    width, height, _ = image.shape
-    for i in range(0, height, patch_height):
-        for j in range(0, width, patch_width):
-            patch = image[j:j + patch_width, i:i + patch_height]
+    patches_with_coords = []
+    height, width, _ = image.shape
+
+    for i in range(0, height - patch_height + 1, patch_height):
+        for j in range(0, width - patch_width + 1, patch_width):
+            patch = image[i:i + patch_height, j:j + patch_width]
+            # Check if the patch size is as expected
+            if patch.shape[0] != patch_height or patch.shape[1] != patch_width:
+                continue
             patches.append(patch)
-            patches_with_cords.append((patch, i, j))
-    return np.array(patches), np.array(patches_with_cords)
+            patches_with_coords.append((patch, i, j))
+    return patches, patches_with_coords
 
 
 def save_patches(image_name, patches, dir_path):
